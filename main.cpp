@@ -13,10 +13,10 @@ int main() {
 
     setlocale( LC_ALL, "rus");
     char buff[50];
-    std::ifstream fin("text.txt");
+    std::ifstream file("text.txt");
 
-    fin >> buff;
-    std::cout << buff << std::endl;
+    file >> buff;
+    //std::cout << buff << std::endl;
 
 
     return 0;
