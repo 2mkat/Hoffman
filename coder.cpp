@@ -2,17 +2,30 @@
 #include <fstream>
 #include  <clocale>
 #include <Windows.h>
+#include <list>
 
 class Node{
 public:
     char s_;
     int key_;
     Node *left_, *right_;
+
     Node(){
         key_ = 0;
         s_ = ' ';
         left_ = nullptr;
         right_ = nullptr;
+    }   // default constructor
+    Node(char s, int key){
+        s_ = s;
+        key_ = key;
+        left_ = nullptr;
+        right_ = nullptr;
+    }
+    Node (Node *left, Node *right){
+        key_ = left->key_ + right->key_;
+        left_ = left;
+        right_ = right;
     }
     ~Node(){
         delete[] left_;
@@ -63,12 +76,21 @@ int main() {
         file >> file_result;
         creat_table(*table, file_result);
     }
-    Node tree;
     write_table_to_file(*table);
+    /*Node tree;
     for(int i = 0; i < 255; ++i){
         if(table[i] != 0){
           tree.key_ = table[i];
           tree.s_ = char(i);
+        }
+    }*/
+    std::list<Node*> l;
+    for(int i = 0; i < 255; ++i){
+        if(table[i] != 0){
+            char s = char(i);
+            int key = table[i];
+            Node *p = new Node(s, key);
+            l.push_back(p);
         }
     }
 
