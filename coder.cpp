@@ -4,6 +4,10 @@
 #include <Windows.h>
 #include <list>
 #include <map>
+#include <vector>
+
+std::vector<bool> cipher;
+std::map<char, std::vector<bool>> code;
 
 class Node{
 public:
@@ -32,21 +36,28 @@ public:
         delete[] left_;
         delete[] right_;
     }
-};
-
-void write_table_to_file(std::map<char, int> &table){
-
-    std::ofstream file_res("code.txt");
-    if(!file_res){
-        std::cerr << "Uh oh, code.txt could not be opened for writing!" << '\n';
-        exit(1);
+    friend std::ostream& operator<<(std::ostream& out, Node& c1){
+        out << c1.s_ << " " << c1.key_ << '\n';
+        return out;
     }
-
-    int* point = &table;
-    for(int i = 0; i < 255; ++i){
-        if(point[i] != 0){
-            file_res << char(i) << point[i];
-        }
+};
+bool comp (const Node *c1, const Node *c2){
+    return c1->key_ < c2->key_;
+}
+void tree_go(Node *head){
+    if(head->left_ != nullptr){
+        cipher.push_back(0);
+        tree_go(head->left_);
+    }
+    if(head->right_ != nullptr){
+        cipher.push_back(1);
+        tree_go(head->right_);
+    }
+    if (head->left_ == nullptr && head->right_ == nullptr){
+        code[head->s_] = cipher;
+    }
+    if(!cipher.empty()){
+        cipher.pop_back();
     }
 }
 
@@ -56,7 +67,13 @@ int main() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
 
-    std::ifstream file("text.txt");
+    std::ofstream file_res("code.txt", std::ios::out | std::ios::binary);
+    if(!file_res){
+        std::cerr << "Uh oh, code.txt could not be opened for writing!" << '\n';
+        exit(1);
+    }
+
+    std::ifstream file("text.txt", std::ios::out | std::ios::binary);
     if (!file){
         std::cerr << "Uh oh, Text.txt could not be opened for reading!" << '\n';
         exit(1);
@@ -65,25 +82,64 @@ int main() {
     std::map<char, int> table;
     std::map<char, int>:: iterator it;
 
-    char file_res;
-    while(!file.eof()) {
-        file >> file_res;
-        table[file_res]++;
+    char s;
+    while(file >> s) {
+        table[s]++;
     }
-    write_table_to_file(table);
-    /*Node tree;
-    for(int i = 0; i < 255; ++i){
-        if(table[i] != 0){
-          tree.key_ = table[i];
-          tree.s_ = char(i);
+    int count = 0;
+    for (it = table.begin(); it != table.end(); it++){
+        if (it->second != 0){
+            ++count;
         }
-    }*/
+    }
+    file_res << count;
+    for(it = table.begin(); it != table.end(); ++it){
+        file_res << it->first << it->second;
+    }
+
     std::list<Node*> l;
     for(it = table.begin(); it != table.end(); ++it){
         Node *p = new Node(it->first, it->second);  ///char s = it->first nt key = it->second
         l.push_back(p);
     }
 
+    while(l.size() != 1) {
+        l.sort(comp);   //make one sort and put on value
+        Node *left_node = l.front();
+        l.pop_front();
+        Node *right_node = l.front();
+        l.pop_front();
+        Node *new_node = new Node(left_node, right_node);
+        l.push_back(new_node);
+    }
+
+    Node *root = l.front();
+    tree_go(root);  ///обход дерева леворекурсивный. Обходим дерево и все листы кладем в новую мапу
+
+    char tp;
+    std::vector<bool> tmp;
+    count = 0;
+
+    file.clear();   /////после чтения за концом файла, поток перейдет в ошибочное состояние, clear сбрасывает ошибки
+    file.seekg(0); ///return pointer file to start
+    while(file >> s){
+        tmp = code[s];
+        for(int i = 0; i < tmp.size(); ++i){
+            std::cout << tmp[i];
+        }
+        for(int i = 0; i < tmp.size(); ++i){
+            tp = tp | tmp[i] << (7 - count);
+            ++count;
+            if(count == 8){
+                count = 0;
+                file_res << tp;
+                tp = 0;
+            }
+        }
+    }
+
+    file.close();
+    file_res.close();
+
     return 0;
 }
-
