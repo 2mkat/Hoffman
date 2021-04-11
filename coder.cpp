@@ -16,8 +16,8 @@ public:
     Node *left_, *right_;   ///pointers on left and right
 
     Node(){
-        key_ = 0;
-        s_ = ' ';
+        //key_ = 0;
+        //s_ = ' ';
         left_ = nullptr;
         right_ = nullptr;
     }   /// default constructor
@@ -83,7 +83,11 @@ int main() {
     std::map<char, int>:: iterator it;
 
     char s;
-    while(file >> s) {
+    /*while(file >> s) {
+        table[s]++;
+    } this is not work ?*/
+    while(!file.eof()) {
+        s = file.get();
         table[s]++;
     }
     int count = 0;
@@ -92,6 +96,7 @@ int main() {
             ++count;
         }
     }
+    //file_res << count;
     file_res.write((char*)(&count), sizeof(count));
     for(it = table.begin(); it != table.end(); ++it){
         //file_res << it->first << it->second;
@@ -126,9 +131,6 @@ int main() {
     file.seekg(0); ///return pointer file to start
     while(file >> s){
         tmp = code[s];
-        for(int i = 0; i < tmp.size(); ++i){
-            std::cout << tmp[i];
-        }
         for(int i = 0; i < tmp.size(); ++i){
             tp = tp | tmp[i] << (7 - count);
             ++count;
