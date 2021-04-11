@@ -3,4 +3,4 @@ project(hoffman)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(hoffman main.cpp)
+add_executable(hoffman helper.h helper.cpp coder.cpp encode.cpp)
