@@ -1,77 +1,17 @@
+#include "helper.cpp"
+
 #include <iostream>
 #include <fstream>
-#include  <clocale>
-#include <Windows.h>
 #include <list>
-#include <map>
-#include <vector>
-
-std::vector<bool> cipher;
-std::map<char, std::vector<bool>> code;
-
-class Node{
-public:
-    char s_;    ///symbol
-    int key_;   /// amount symbols
-    Node *left_, *right_;   ///pointers on left_ and right_
-
-    Node(){
-        key_ = 0;
-        s_ = ' ';
-        left_ = nullptr;
-        right_ = nullptr;
-    }   /// default constructor
-    Node(char s, int key){
-        s_ = s;
-        key_ = key;
-        left_ = nullptr;
-        right_ = nullptr;
-    }
-    Node (Node *left, Node *right){
-        key_ = left->key_ + right->key_;    /// merging to symbols and sum it
-        left_ = left;
-        right_ = right;
-    }
-    ~Node(){
-        delete[] left_;
-        delete[] right_;
-    }
-};
-bool comp (const Node *c1, const Node *c2){
-    return c1->key_ < c2->key_;
-}
-void tree_go(Node *head){
-    if(head->left_ != nullptr){
-        cipher.push_back(0);
-        tree_go(head->left_);
-    }
-    if(head->right_ != nullptr){
-        cipher.push_back(1);
-        tree_go(head->right_);
-    }
-    if (head->left_ == nullptr && head->right_ == nullptr){
-        code[head->s_] = cipher;
-    }
-    if(!cipher.empty()){
-        cipher.pop_back();
-    }
-}
 
 int main() {
-
-    setlocale(LC_ALL,"Russian");
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
-
-    std::ofstream file_res("code.txt", std::ios::in | std::ios::binary);
+    std::ofstream file_res("code.txt", std::ios::out | std::ios::binary);
     if(!file_res){
         std::cerr << "Uh oh, code.txt could not be opened for writing!" << '\n';
-        exit(1);
     }
     std::ifstream file("text.txt", std::ios::out | std::ios::binary);
     if (!file){
         std::cerr << "Uh oh, Text.txt could not be opened for reading!" << '\n';
-        exit(1);
     }
 
     std::map<char, int> table;
@@ -80,16 +20,14 @@ int main() {
     while(!file.eof()) {
         s = file.get();
         table[s]++;
-    }
-
+    }   ///count symbols
     int count = 0;
     for (it = table.begin(); it != table.end(); it++){
         if (it->second != 0){
-            count += 40;
+            ++count;
         }
     }
     file_res.write((char*)(&count), sizeof(count));
-
     for(it = table.begin(); it != table.end(); ++it){
         file_res.write((char*)(&it->first), sizeof(it->first));
         file_res.write((char*)(&table[it->first]), sizeof(table[it->first]));
@@ -100,7 +38,6 @@ int main() {
         Node *p = new Node(it->first, it->second);  ///char s_ = it->first nt key_ = it->second
         l.push_back(p);
     }
-
     while(l.size() != 1) {
         l.sort(comp);   //make one sort and put on value
         Node *left_node = l.front();
