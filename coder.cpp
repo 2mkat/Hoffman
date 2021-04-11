@@ -67,7 +67,7 @@ int main() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
 
-    std::ofstream file_res("code.txt", std::ios::out | std::ios::binary);
+    std::ofstream file_res("code.txt", std::ios::in | std::ios::binary);
     if(!file_res){
         std::cerr << "Uh oh, code.txt could not be opened for writing!" << '\n';
         exit(1);
@@ -92,9 +92,11 @@ int main() {
             ++count;
         }
     }
-    file_res << count;
+    file_res.write((char*)(&count), sizeof(count));
     for(it = table.begin(); it != table.end(); ++it){
-        file_res << it->first << it->second;
+        //file_res << it->first << it->second;
+        file_res.write((char*)(&it->first), sizeof(it->first));
+        file_res.write((char*)(&table[it->first]), sizeof(table[it->first]));
     }
 
     std::list<Node*> l;
